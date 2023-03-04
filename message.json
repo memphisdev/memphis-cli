@@ -1,0 +1,20 @@
+{
+    "uuid": "",
+    "id": "01869def-3cbd-0001-5a5a-a92b6b31df78",
+    "event": "$pageleave",
+    "properties": "$active_feature_flags",
+    "elements_chain": "",
+    "person": "1863ac817a022f-03dc9795fbd578-16525635-1d73c0-1863ac817a12306",
+    "elements": "16525635-1d73c0-1863ac817a12306",
+    "set": "",
+    "set_once": "",
+    "distinct_id": "1863ac817a022f-03dc9795fbd578-16525635-1d73c0-1863ac817a12306",
+    "distinct__ids": "1863ac817a022f-03dc9795fbd578-16525635-1d73c0-1863ac817a12306",
+    "team_id": 54,
+    "ip": "46.120.160.98",
+    "site_url": "https://translate.google.co.il/?hl=iw&tab=TT",
+    "timestamp": "2023-03-01T16:09:06.972000+00:00",
+    "type": "main-page",
+    "is__identified": "false",
+    "bq_ingested_timestamp": "2023-03-01T16:34:06.972000+00:00"
+}
