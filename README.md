@@ -63,14 +63,8 @@ git clone git@github.com:memphisdev/memphis-cli-new.git
 ./dist/memphis --help
 ```
 ### For Windows
-1. Install [Go](https://go.dev/dl/)
-2. Install the CLI dependencies - Within the project directory, run the following
 ```shell
-go install
-```
-3. Run
-```shell
-go run main.go -h
+dist\windows\memphis.exe --help
 ```
 
 ### Step 3: Example command
