@@ -58,9 +58,13 @@ git clone git@github.com:memphisdev/memphis-cli-new.git
 
 
 ### Step 2: Run the binary file or copy to your `path` to be able to run it from anywhere in your shell
-### For Linux-based OS
+### For MacOS
 ```shell
 ./dist/memphis --help
+```
+### For Linux(amd64)
+```shell
+./dist/amd64/memphis --help
 ```
 ### For Windows
 ```shell
