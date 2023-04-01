@@ -42,7 +42,7 @@ var produceCmd = &cobra.Command{
 
 		concurrent := int(c)
 		totalBytes := int64(count) * size
-		conn, err := memphis.Connect(host, user, token)
+		conn, err := memphis.Connect(host, user, memphis.ConnectionToken(token))
 		if err != nil {
 			fmt.Println("Can not connect with memphis: " + err.Error())
 			return

@@ -3,11 +3,12 @@ module memphis-load-tests-cli
 go 1.19
 
 require (
-	github.com/memphisdev/memphis.go v0.2.1
+	github.com/memphisdev/memphis.go v0.2.2-beta.1
 	github.com/spf13/cobra v1.6.1
 )
 
 require (
+	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/graph-gophers/graphql-go v1.5.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/klauspost/compress v1.16.0 // indirect

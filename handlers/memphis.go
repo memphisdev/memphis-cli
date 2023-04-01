@@ -9,7 +9,7 @@ import (
 )
 
 func Produce(wg *sync.WaitGroup, host, user, token, station string, count int64, msg []byte, sync bool) {
-	conn, err := memphis.Connect(host, user, token)
+	conn, err := memphis.Connect(host, user, memphis.ConnectionToken(token))
 	if err != nil {
 		fmt.Println("Can not connect with memphis: " + err.Error())
 		os.Exit(0)
