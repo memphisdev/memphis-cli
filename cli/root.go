@@ -10,9 +10,9 @@ import (
 var version = "0.0.1"
 
 var rootCmd = &cobra.Command{
-    Use:  "memphis",
+    Use:  "mem",
     Version: version,
-    Long: `Utility for running load tests on Memphis`,
+    Long: `Memphis Utility`,
     Run: func(cmd *cobra.Command, args []string) {
         
     },

@@ -1,6 +1,8 @@
 package main
 
-import "memphis-load-tests-cli/cli"
+import (
+	"memphis-cli/cli"
+)
 
 func main() {
 	cli.Execute()

@@ -1,10 +1,11 @@
-module memphis-load-tests-cli
+module memphis-cli
 
 go 1.19
 
 require (
 	github.com/memphisdev/memphis.go v0.2.2-beta.1
 	github.com/spf13/cobra v1.6.1
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
