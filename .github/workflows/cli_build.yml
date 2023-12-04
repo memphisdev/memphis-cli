@@ -41,11 +41,11 @@ jobs:
 
       - name: Build for Mac apple chips
         run: |
-          env GOOS=darwin GOARCH=arm64 go build -o mem-macos-arm64
+          env GOOS=darwin GOARCH=arm64 go build -o dist/mem-macos-arm64
 
       - name: Build for Mac intel chips
         run: |
-          env GOOS=darwin GOARCH=amd64 go build -o mem-macos-amd64
+          env GOOS=darwin GOARCH=amd64 go build -o dist/mem-macos-amd64
 
       - name: Build for Linux
         run: |
