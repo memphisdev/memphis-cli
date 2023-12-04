@@ -32,17 +32,17 @@ real-time and streaming apps fast.
 ## Installation
 Mac
 ```sh
-$  
+$  brew install memphis-cli
 ```
 
 Linux
 ```sh
-$ 
+$ sudo apt-get install memphis-cli
 ```
 
 Windows
 ```sh
-$ 
+$ choco install memphis-cli
 ```
 
 ### Creating a Memphis function template
