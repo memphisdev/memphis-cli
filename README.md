@@ -32,7 +32,7 @@ real-time and streaming apps fast.
 ## Installation
 Mac
 ```sh
-$ 
+$  
 ```
 
 Linux
