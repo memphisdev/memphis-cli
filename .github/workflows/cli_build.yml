@@ -1,0 +1,84 @@
+name: CLI Build and Commit
+
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build-and-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Fetch Latest Master
+        run: |
+          git fetch origin master
+          git checkout master
+          git reset --hard origin/master
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.19'
+
+      - name: Print Current Working Directory Path
+        run: pwd
+
+      - name: Print Current Working Directory List
+        run: ls -la
+
+      - name: Create New Branch
+        run: |
+          git checkout -b cli-build-files-${{ github.run_id }}
+
+      - name: Clear Previous Build
+        run: |
+          ls -la ./dist/
+          rm -rf ./dist/*
+          ls -la ./dist/
+
+      - name: Build for Mac apple chips
+        run: |
+          env GOOS=darwin GOARCH=arm64 go build -o mem-macos-arm64
+
+      - name: Build for Mac intel chips
+        run: |
+          env GOOS=darwin GOARCH=amd64 go build -o mem-macos-amd64
+
+      - name: Build for Linux
+        run: |
+          GOOS=linux GOARCH=amd64 go build -o dist/mem-linux-amd64
+
+      - name: Build for Windows
+        run: |
+          GOOS=windows GOARCH=amd64 go build -o dist/mem-windows-amd64.exe
+
+      - name: List Root Directory Contents
+        run: |
+          ls -la ./dist/
+
+      - name: Commit Changes
+        run: |
+          git config --global user.name 'teammemphis'
+          git config --global user.email 'team@memphis.dev'
+          git add ./dist/*
+          git commit -m "Build CLI Files" -a || echo "No changes to commit"
+
+      - name: Push Changes
+        run: |
+          git push origin cli-build-files-${{ github.run_id }}
+
+      - name: Create Pull Request
+        uses: repo-sync/pull-request@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_title: "Build CLI Files"
+          pr_body: "Automated CLI build for commit ${{ github.sha }}"
+          destination_branch: "master"
+          source_branch: "cli-build-files-${{ github.run_id }}"
+          pr_assignee: "idanasulinmemphis"
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
