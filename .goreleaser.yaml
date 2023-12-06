@@ -78,9 +78,9 @@ brews:
       # it.
       #
       # Since: v1.17
-      pull_request:
+      # pull_request:
         # Whether to enable it or not.
-        enabled: true
+      #   enabled: true
 
         # Whether to open the PR as a draft or not.
         #
