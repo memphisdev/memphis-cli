@@ -50,9 +50,58 @@ brews:
   -
     name: memphis-cli
     homepage: "https://github.com/memphisdev/memphis-cli"
-    tap:
-      owner: memphis
-      name: memphisdev
+   # Repository to push the generated files to.
+    repository:
+      # Repository owner.
+      #
+      # Templates: allowed
+      owner: team@memphis.dev
+
+      # Repository name.
+      #
+      # Templates: allowed
+      name: memphis-cli
+
+      # Optionally a branch can be provided.
+      #
+      # Default: default repository branch
+      # Templates: allowed
+      branch: brew
+
+      # Optionally a token can be provided, if it differs from the token
+      # provided to GoReleaser
+      # Templates: allowed
+      token: "{{ .Env.GITHUB_TOKEN }}"
+
+      # Sets up pull request creation instead of just pushing to the given branch.
+      # Make sure the 'branch' property is different from base before enabling
+      # it.
+      #
+      # Since: v1.17
+      pull_request:
+        # Whether to enable it or not.
+        enabled: true
+
+        # Whether to open the PR as a draft or not.
+        #
+        # Since: v1.19
+        draft: true
+
+        # If the pull request template has checkboxes, enabling this will
+        # check all of them.
+        #
+        # Since: v1.20 (pro).
+        # This feature is only available in GoReleaser Pro.
+        # check_boxex: true
+
+        # Base can also be another repository, in which case the owner and name
+        # above will be used as HEAD, allowing cross-repository pull requests.
+        #
+        # Since: v1.19
+        # base:
+        #   owner: goreleaser
+        #   name: my-repo
+        #   branch: main
     commit_author:
       name: memphis
       email: team@memphis.dev
