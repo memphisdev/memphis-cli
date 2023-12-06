@@ -55,7 +55,7 @@ brews:
       # Repository owner.
       #
       # Templates: allowed
-      owner: team@memphis.dev
+      owner: memphisdev
 
       # Repository name.
       #
