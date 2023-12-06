@@ -50,6 +50,7 @@ brews:
   -
     name: memphis-cli
     homepage: "https://github.com/memphisdev/memphis-cli"
+    description: "Memphis.dev CLI"
    # Repository to push the generated files to.
     repository:
       # Repository owner.
