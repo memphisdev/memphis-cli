@@ -106,3 +106,16 @@ brews:
     commit_author:
       name: memphis
       email: team@memphis.dev
+
+
+nfpms:
+  - package_name: memphis-cli
+    homepage: https://github.com/memphisdev/memphis-cli/
+    maintainer: Memphis <team@memphis.dev>
+    description: |-
+            Memphis.dev - CLI.
+    formats:
+      - rpm
+      - deb
+      - apk
+    bindir: /usr/bin
