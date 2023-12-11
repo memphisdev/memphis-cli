@@ -3,7 +3,7 @@ name: CLI Build and Commit
 on:
   push:
     branches:
-      - master
+      - master_test
 jobs:
   build-and-commit:
     runs-on: ubuntu-latest
