@@ -2,16 +2,14 @@ module memphis-cli
 
 go 1.19
 
-replace github.com/memphisdev/memphis.go => /Users/idanasulin/Desktop/Memphis/Repositories/SDKs/memphis.go
-
 require (
+	github.com/briandowns/spinner v1.23.0
 	github.com/memphisdev/memphis.go v1.2.1
 	github.com/spf13/cobra v1.6.1
 	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
-	github.com/briandowns/spinner v1.23.0 // indirect
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/graph-gophers/graphql-go v1.5.0 // indirect
