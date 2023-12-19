@@ -53,6 +53,7 @@ $ powershell -c "Expand-Archive memphis-cli_Windows_x86_64.zip -DestinationPath 
 ## Upgrade
 Mac
 ```sh
+$ brew update --auto-update
 $ brew upgrade memphis-cli
 ```
 
