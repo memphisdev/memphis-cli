@@ -50,7 +50,59 @@ $ powershell -c "Invoke-WebRequest -Uri 'https://github.com/memphisdev/memphis-c
 $ powershell -c "Expand-Archive memphis-cli_Windows_x86_64.zip -DestinationPath memphis-cli -Force"
 ```
 
+## Functions
 ### Create a basic Memphis function template.
 ```sh
-mem func init myExampleFunc --lang [nodejs/go/python]
+$ mem func init myExampleFunc --lang [nodejs/go/python]
 ```
+
+## Benchmark
+#### Overview
+The Memphis Benchmarking Tool is designed to evaluate the performance of Memphis producer/consumer under various configurations. It allows for detailed specification of message size, batch processing, concurrency, and more
+
+### Producer
+#### Usage
+To benchmark a Memphis producer, use the following command structure:
+```sh
+$ mem bench producer --message-size 128 --count 1000 --concurrency 1 --host <host> --account-id <account-id(not needed for open-source)> --user <client type user> --password <password>
+```
+
+### available flags
+- **station:** Specify the station for message production (default: benchmark-station).
+- **partition-key:** Define a partition key for message production. Takes precedence over partition-number.
+- **partition-number:** The desired partition number to which the messages will be produced, default is 1
+- **producer-name:** Name the producer (default: p-bench).
+- **message-size:** Set message size in bytes (range: 128 to 8,388,608 [8MB]). Random data generated if empty.
+- **count:** Specify the number of messages to produce (default: 1).
+- **message:** Define a custom message. Random data generated if empty.
+- **message:** Whether to wait for an acknowledgement for every message, default is false
+- **concurrency:** Set the number of concurrent producers (default: 1).
+- **host:** Specify the Memphis host (default: localhost).
+- **account-id:** Account ID for Memphis server (not required for open-source edition).
+- **user:** Username for Memphis server access (client type user).
+- **password:** Password for Memphis server access.
+
+
+### Consumer
+#### Usage
+To benchmark a Memphis consumer, use the following command structure:
+```sh
+$ mem bench consumer --message-size 128 --count 1000 --concurrency 1 --batch-size 50 --host <host> --account-id <account-id(not needed for open-source)> --user <client type user> --password <password>
+```
+
+### available flags
+- **station:** Specify the station for message production (default: benchmark-station).
+- **partition-key:** Define a partition key for message production. Takes precedence over partition-number.
+- **consumer-name:** Set a custom name for the consumer (default: c-bench).
+- **group:** Name the consumer's group (default: cg-bench).
+- **batch-size:** Determine the batch size (default: 10).
+- **batch-max-wait-time:** Max wait time (in milliseconds) for a batch (default: 1).
+- **message-size:** Set message size in bytes (range: 128 to 8,388,608 [8MB]). Random data generated if empty.
+- **count:** Specify the number of messages to produce (default: 1).
+- **message:** Define a custom message. Random data generated if empty.
+- **concurrency:** Set the number of concurrent producers (default: 1).
+- **producer-name:** Name the producer (default: p-bench).
+- **host:** Specify the Memphis host (default: localhost).
+- **account-id:** Account ID for Memphis server (not required for open-source edition).
+- **user:** Username for Memphis server access (client type user).
+- **password:** Password for Memphis server access.
