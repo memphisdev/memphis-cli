@@ -28,8 +28,7 @@ To Build Event-driven And Real-time Features Faster Than Ever.<br>
 ## Installation
 Mac
 ```sh
-$ brew tap memphisdev/memphis-cli
-$ brew install memphis-cli
+brew tap memphisdev/memphis-cli && brew install memphis-cli
 ```
 
 Linux - RPM
