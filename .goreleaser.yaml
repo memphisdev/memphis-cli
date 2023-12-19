@@ -110,6 +110,7 @@ brews:
 
 nfpms:
   - package_name: memphis-cli
+    file_name_template: '{{ .PackageName }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
     homepage: https://github.com/memphisdev/memphis-cli/
     maintainer: Memphis <team@memphis.dev>
     description: |-
