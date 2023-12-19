@@ -52,10 +52,12 @@ func createStation(host, user, pass, station string, accountId int) error {
 	return nil
 }
 
-func produceMessages(host, user, pass, station, pName, partitionKey, message string, mSize, count, partitionNumber, accountId, concurrency int, syncProduce bool) (int64, error) {
-	err := createStation(host, user, pass, station, accountId)
-	if err != nil {
-		return 0, fmt.Errorf(err.Error())
+func produceMessages(host, user, pass, station, pName, partitionKey, message string, mSize, count, partitionNumber, accountId, concurrency int, syncProduce, shouldCreateStation bool) (int64, error) {
+	if shouldCreateStation {
+		err := createStation(host, user, pass, station, accountId)
+		if err != nil {
+			return 0, fmt.Errorf(err.Error())
+		}
 	}
 
 	// creating separate conns and producers for each goroutine
@@ -173,7 +175,7 @@ var benchProduceCmd = &cobra.Command{
 		loader := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
 		fmt.Println("Producing messages...")
 		loader.Start()
-		duration, err := produceMessages(host, user, pass, station, pName, partitionKey, message, mSize, count, partitionNumber, accountId, concurrency, syncProduce)
+		duration, err := produceMessages(host, user, pass, station, pName, partitionKey, message, mSize, count, partitionNumber, accountId, concurrency, syncProduce, true)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
@@ -265,16 +267,14 @@ var benchConsumeCmd = &cobra.Command{
 		loader := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
 		fmt.Println("Producing messages...")
 		loader.Start()
-		// produce messages
-		_, err = produceMessages(host, user, pass, station, pName, partitionKey, message, mSize, count, 1, accountId, concurrency, false)
+
+		err = createStation(host, user, pass, station, accountId)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
-		time.Sleep(time.Duration(count) * time.Microsecond) // wait for all messages to arrive
-		loader.Stop()
 
-		// creating separate conns and consumers for each goroutine
+		// creating separate conns and consumers for each goroutine, creating consumers first, otherwise messages won't be retained since it is an ack-based station
 		conns := make([]*memphis.Conn, concurrency)
 		consumers := make([]*memphis.Consumer, concurrency)
 		for i := 0; i < concurrency; i++ {
@@ -296,6 +296,15 @@ var benchConsumeCmd = &cobra.Command{
 			}
 			consumers[i] = c
 		}
+
+		// produce messages
+		_, err = produceMessages(host, user, pass, station, pName, partitionKey, message, mSize, count, 1, accountId, concurrency, false, false)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		time.Sleep(time.Duration(count) * time.Microsecond) // wait for all messages to arrive
+		loader.Stop()
 
 		fetchPartitionOpts := []memphis.ConsumingOpt{}
 		if partitionKey != "" {
