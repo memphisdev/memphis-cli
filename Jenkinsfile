@@ -49,6 +49,18 @@ pipeline {
           }
         }
    }
+   stage('Checkout to version branch') {
+        when {branch 'latest'}
+        steps {
+            withCredentials([sshUserPrivateKey(keyFileVariable:'check',credentialsId: 'main-github')]) {
+            sh """
+	        git reset --hard origin/latest
+	        GIT_SSH_COMMAND='ssh -i $check'  git checkout -b ${versionTag}
+       	        GIT_SSH_COMMAND='ssh -i $check' git push --set-upstream origin ${versionTag}
+            """
+            }
+        }
+   }
   }
     
 
