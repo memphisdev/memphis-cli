@@ -98,7 +98,7 @@ $ mem bench producer --message-size 128 --count 1000 --concurrency 1 --host <hos
 - **producer-name:** Name the producer (default: p-bench).
 - **message-size:** Set message size in bytes (range: 128 to 8,388,608 [8MB]). Random data generated if empty.
 - **count:** Specify the number of messages to produce (default: 1).
-- **message:** Define a custom message. Random data generated if empty.
+- **message:** Path for a file holds a custom message. Random data generated if empty.
 - **message:** Whether to wait for an acknowledgement for every message, default is false
 - **concurrency:** Set the number of concurrent producers (default: 1).
 - **host:** Specify the Memphis host (default: localhost).
@@ -120,10 +120,10 @@ $ mem bench consumer --message-size 128 --count 1000 --concurrency 1 --batch-siz
 - **consumer-name:** Set a custom name for the consumer (default: c-bench).
 - **group:** Name the consumer's group (default: cg-bench).
 - **batch-size:** Determine the batch size (default: 10).
-- **batch-max-wait-time:** Max wait time (in milliseconds) for a batch (default: 250 which is also the minimum value).
+- **batch-max-wait-time:** Max wait time (in milliseconds) for a batch (default: 5000 which is also the minimum value).
 - **message-size:** Set message size in bytes (range: 128 to 8,388,608 [8MB]). Random data generated if empty.
 - **count:** Specify the number of messages to produce (default: 1).
-- **message:** Define a custom message. Random data generated if empty.
+- **message:** Path for a file holds a custom message. Random data generated if empty.
 - **concurrency:** Set the number of concurrent producers (default: 1).
 - **producer-name:** Name the producer (default: p-bench).
 - **host:** Specify the Memphis host (default: localhost).

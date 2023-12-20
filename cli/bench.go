@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"sync"
 	"time"
 
@@ -41,47 +42,61 @@ func createStation(host, user, pass, station string, accountId int) error {
 		memphis.AccountId(accountId),
 	)
 	if err != nil {
-		return fmt.Errorf("Failed to connect to Memphis server: %v\n", err)
+		return fmt.Errorf("failed to connect to Memphis server: %v", err)
 	}
 
-	_, err = c.CreateStation(station, memphis.RetentionTypeOpt(memphis.AckBased))
+	_, err = c.CreateStation(station)
 	if err != nil {
-		return fmt.Errorf("Failed to create station: %v\n", err)
+		return fmt.Errorf("failed to create station: %v", err)
 	}
 	c.Close()
 	return nil
 }
 
-func produceMessages(host, user, pass, station, pName, partitionKey, message string, mSize, count, partitionNumber, accountId, concurrency int, syncProduce, shouldCreateStation bool) (int64, error) {
-	if shouldCreateStation {
-		err := createStation(host, user, pass, station, accountId)
-		if err != nil {
-			return 0, fmt.Errorf(err.Error())
-		}
+func generateClientsAndProduceMessages(host, user, pass, station, pName, partitionKey, messagePath, cName, cGroup string, mSize, count, partitionNumber, accountId, concurrency, batchSize, batchMaxWaitTime int, syncProduce bool, consumers []*memphis.Consumer, loader *spinner.Spinner) (int64, error) {
+	fmt.Println("Initializing station and clients...")
+	loader.Start()
+	err := createStation(host, user, pass, station, accountId)
+	if err != nil {
+		return 0, fmt.Errorf(err.Error())
 	}
 
 	// creating separate conns and producers for each goroutine
 	conns := make([]*memphis.Conn, concurrency)
 	producers := make([]*memphis.Producer, concurrency)
 	for i := 0; i < concurrency; i++ {
-		c, err := memphis.Connect(host,
+		conn, err := memphis.Connect(host,
 			user,
 			memphis.Password(pass),
 			memphis.AccountId(accountId),
 		)
 		if err != nil {
-			return 0, fmt.Errorf("Failed to connect to Memphis server: %v\n", err)
+			return 0, fmt.Errorf("failed to connect to Memphis server: %v", err)
 		}
-		conns[i] = c
+		conns[i] = conn
 
-		p, err := c.CreateProducer(station, pName)
+		p, err := conn.CreateProducer(station, pName)
 		if err != nil {
-			return 0, fmt.Errorf("Failed to create producer: %v\n", err)
+			return 0, fmt.Errorf("failed to create producer: %v", err)
 		}
 		producers[i] = p
+
+		if consumers != nil {
+			c, err := conn.CreateConsumer(station, cName, memphis.ConsumerGroup(cGroup), memphis.BatchSize(batchSize), memphis.BatchMaxWaitTime(time.Duration(batchMaxWaitTime)*time.Millisecond))
+			if err != nil {
+				return 0, fmt.Errorf("failed to create consumer: %v", err)
+			}
+			consumers[i] = c
+		}
 	}
-	messageBytes := []byte(message)
-	if message == "" {
+
+	var messageBytes []byte
+	if messagePath != "" {
+		messageBytes, err = os.ReadFile(messagePath)
+		if err != nil {
+			return 0, err
+		}
+	} else {
 		messageBytes = generateRandomJSON(mSize)
 	}
 	produceSyncOpts := memphis.AsyncProduce()
@@ -92,7 +107,10 @@ func produceMessages(host, user, pass, station, pName, partitionKey, message str
 	if partitionKey != "" {
 		producePartitionOpts = memphis.ProducerPartitionKey(partitionKey)
 	}
+	loader.Stop()
 
+	fmt.Println("Producing messages...")
+	loader.Start()
 	wg := sync.WaitGroup{}
 	wg.Add(concurrency)
 	start := time.Now()
@@ -116,7 +134,9 @@ func produceMessages(host, user, pass, station, pName, partitionKey, message str
 	}
 
 	wg.Wait() // wait for all producers to finish
+	loader.Stop()
 	duration := time.Since(start).Milliseconds()
+
 	return duration, nil
 }
 
@@ -173,14 +193,11 @@ var benchProduceCmd = &cobra.Command{
 		}
 
 		loader := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
-		fmt.Println("Producing messages...")
-		loader.Start()
-		duration, err := produceMessages(host, user, pass, station, pName, partitionKey, message, mSize, count, partitionNumber, accountId, concurrency, syncProduce, true)
+		duration, err := generateClientsAndProduceMessages(host, user, pass, station, pName, partitionKey, message, "", "", mSize, count, partitionNumber, accountId, concurrency, 0, 0, syncProduce, nil, loader)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
-		loader.Stop()
 
 		durationForPrint := float64(duration)
 		totalDurUnits := "ms"
@@ -197,7 +214,7 @@ var benchProduceCmd = &cobra.Command{
 		}
 
 		fmt.Printf("%v message have been produced, total latency: %v%s, latency for a single message: %v%s\n", count, durationForPrint, totalDurUnits, avgDurForPrint, avgDurUnits)
-		time.Sleep(time.Duration(count) * time.Microsecond) // wait for all messages to arrive
+		time.Sleep(time.Duration(count)*time.Microsecond + 1*time.Second) // wait for all messages to arrive
 	},
 }
 
@@ -254,8 +271,8 @@ var benchConsumeCmd = &cobra.Command{
 			batchSize = 10
 		}
 		batchMaxWaitTime, err := cmd.Flags().GetInt("batch-max-wait-time")
-		if batchMaxWaitTime < 250 || err != nil {
-			batchMaxWaitTime = 250
+		if batchMaxWaitTime < 5000 || err != nil {
+			batchMaxWaitTime = 5000
 		}
 		partitionKey, _ := cmd.Flags().GetString("partition-key")
 		message, _ := cmd.Flags().GetString("message") // default is ""
@@ -265,46 +282,12 @@ var benchConsumeCmd = &cobra.Command{
 		}
 
 		loader := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
-		fmt.Println("Producing messages...")
-		loader.Start()
-
-		err = createStation(host, user, pass, station, accountId)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-
-		// creating separate conns and consumers for each goroutine, creating consumers first, otherwise messages won't be retained since it is an ack-based station
-		conns := make([]*memphis.Conn, concurrency)
 		consumers := make([]*memphis.Consumer, concurrency)
-		for i := 0; i < concurrency; i++ {
-			conn, err := memphis.Connect(host,
-				user,
-				memphis.Password(pass),
-				memphis.AccountId(accountId),
-			)
-			if err != nil {
-				fmt.Printf("Failed to connect to Memphis server: %v\n", err)
-				return
-			}
-			conns[i] = conn
-
-			c, err := conn.CreateConsumer(station, cName, memphis.ConsumerGroup(cGroup), memphis.BatchSize(batchSize), memphis.BatchMaxWaitTime(time.Duration(batchMaxWaitTime)*time.Millisecond))
-			if err != nil {
-				fmt.Printf("Failed to create producer: %v\n", err)
-				return
-			}
-			consumers[i] = c
-		}
-
-		// produce messages
-		_, err = produceMessages(host, user, pass, station, pName, partitionKey, message, mSize, count, 1, accountId, concurrency, false, false)
+		_, err = generateClientsAndProduceMessages(host, user, pass, station, pName, partitionKey, message, cName, cGroup, mSize, count, 1, accountId, concurrency, batchSize, batchMaxWaitTime, false, consumers, loader)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
-		time.Sleep(time.Duration(count) * time.Microsecond) // wait for all messages to arrive
-		loader.Stop()
 
 		fetchPartitionOpts := []memphis.ConsumingOpt{}
 		if partitionKey != "" {
@@ -316,6 +299,7 @@ var benchConsumeCmd = &cobra.Command{
 
 		fmt.Println("Start consuming...")
 		loader.Start()
+		time.Sleep(time.Duration(count)*time.Microsecond + 1*time.Second) // wait for all messages to arrive
 		// consume messages concurrently
 		for i := 0; i < concurrency; i++ {
 			go func(index int, chann chan int) {
@@ -342,7 +326,6 @@ var benchConsumeCmd = &cobra.Command{
 			totalConsumed += amount
 		}
 		duration := time.Since(start).Milliseconds()
-		close(ch)
 
 		durationForPrint := float64(duration)
 		totalDurUnits := "ms"
@@ -377,7 +360,7 @@ func init() {
 	benchProduceCmd.Flags().String("producer-name", "p-bench", "The desired name of the producer, default is p-bench")
 	benchProduceCmd.Flags().Int("message-size", 128, "The desired message size in bytes, default is 128, min is 128, max is 8,388,608(8MB). In case message flag is empty this will cause random data to be created")
 	benchProduceCmd.Flags().Int("count", 1, "The desired amount of messages to be produced, default is 1")
-	benchProduceCmd.Flags().String("message", "", "The desired message to be produced, default is empty. In case this flag is empty this will cause random data to be created")
+	benchProduceCmd.Flags().String("message", "", "Path for a file holds the desired message to be produced, default is empty. In case this flag is empty this will cause random data to be created")
 	benchProduceCmd.Flags().Bool("sync-produce", false, "Whether to wait for an acknowledgement for every message, default is false")
 	benchProduceCmd.Flags().Int("concurrency", 1, "The desired amount of concurrent producers, default is 1")
 	benchProduceCmd.Flags().String("host", "localhost", "Memphis host, default is localhost")
@@ -390,12 +373,12 @@ func init() {
 	benchConsumeCmd.Flags().String("consumer-name", "c-bench", "The desired name of the consumer, default is c-bench")
 	benchConsumeCmd.Flags().String("group", "cg-bench", "The desired name of the consumers group, default is cg-bench")
 	benchConsumeCmd.Flags().Int("batch-size", 10, "The desired batch size, default is 10")
-	benchConsumeCmd.Flags().Int("batch-max-wait-time", 250, "The desired max wait time (in millis) for a batch, default and minimum is 250")
+	benchConsumeCmd.Flags().Int("batch-max-wait-time", 5000, "The desired max wait time (in millis) for a batch, default and minimum is 5000")
 	benchConsumeCmd.Flags().Int("concurrency", 1, "The desired amount of concurrent producers, default is 1")
 	benchConsumeCmd.Flags().String("producer-name", "p-bench", "The desired name of the producer, default is p-bench")
 	benchConsumeCmd.Flags().Int("message-size", 128, "The desired message size in bytes, default is 128, min is 128, max is 8,388,608(8MB). In case message flag is empty this will cause random data to be created")
 	benchConsumeCmd.Flags().Int("count", 1, "The desired amount of messages to be produced, default is 1")
-	benchConsumeCmd.Flags().String("message", "", "The desired message to be produced, default is empty. In case this flag is empty this will cause random data to be created")
+	benchConsumeCmd.Flags().String("message", "", "Path for a file holds the desired message to be produced, default is empty. In case this flag is empty this will cause random data to be created")
 	benchConsumeCmd.Flags().String("host", "localhost", "Memphis host, default is localhost")
 	benchConsumeCmd.Flags().Int("account-id", 1, "The account id to use when connecting to the Memphis server (for open source users)")
 	benchConsumeCmd.Flags().String("user", "", "The user name to use when connecting to the Memphis server")
