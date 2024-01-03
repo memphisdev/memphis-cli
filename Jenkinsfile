@@ -18,38 +18,32 @@ pipeline {
       }
     }
 
-    stage('Install GoReleaser')
+    stage('Install GoReleaser') {
         steps {
             sh """
-                echo '[goreleaser]
-                name=GoReleaser
-                baseurl=https://repo.goreleaser.com/yum/
-                enabled=1
-                gpgcheck=0' | sudo tee /etc/yum.repos.d/goreleaser.repo
-                sudo yum install goreleaser -y
+                echo -e "[goreleaser]\nname=GoReleaser\nbaseurl=https://repo.goreleaser.com/yum/\nenabled=1\ngpgcheck=0" | sudo tee /etc/yum.repos.d/goreleaser.repo
+                sudo dnf install goreleaser -y
             """
         }
-
-    stage('Run GoReleaser - MASTER') {
-        when {branch 'staging'}
-        steps {
-        }
-   }
-   stage('Run GoReleaser - LATEST') {
+    }
+	  
+    stage('Run GoReleaser - LATEST') {
         when {branch 'latest'}
         steps {
+            withCredentials([sshUserPrivateKey(keyFileVariable:'check',credentialsId: 'main-github')]) {
             sh """
-                git tag -a v${versionTag} -m "Release v${versionTag}"
-                git push origin v${versionTag}
+                GIT_SSH_COMMAND='ssh -i $check' git tag -a v${versionTag} -m "Release v${versionTag}"
+                GIT_SSH_COMMAND='ssh -i $check' git push origin v${versionTag}
             """
+            }
             withCredentials([string(credentialsId: 'gh_token', variable: 'GITHUB_TOKEN')]) {
 	        sh """
                 goreleaser release --clean
             """
           }
         }
-   }
-   stage('Checkout to version branch') {
+    }
+    stage('Checkout to version branch') {
         when {branch 'latest'}
         steps {
             withCredentials([sshUserPrivateKey(keyFileVariable:'check',credentialsId: 'main-github')]) {
