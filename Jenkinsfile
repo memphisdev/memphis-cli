@@ -18,7 +18,7 @@ pipeline {
       }
     }
 
-    stage('Install GoReleaser')
+    stage('Install GoReleaser') {
         steps {
             sh """
                 echo '[goreleaser]
@@ -29,13 +29,11 @@ pipeline {
                 sudo yum install goreleaser -y
             """
         }
-
+    }
+	  
     stage('Run GoReleaser - MASTER') {
-        when {branch 'staging'}
-        steps {
-        }
-   }
-   stage('Run GoReleaser - LATEST') {
+    }
+    stage('Run GoReleaser - LATEST') {
         when {branch 'latest'}
         steps {
             sh """
@@ -48,8 +46,8 @@ pipeline {
             """
           }
         }
-   }
-   stage('Checkout to version branch') {
+    }
+    stage('Checkout to version branch') {
         when {branch 'latest'}
         steps {
             withCredentials([sshUserPrivateKey(keyFileVariable:'check',credentialsId: 'main-github')]) {
