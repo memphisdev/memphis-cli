@@ -31,8 +31,6 @@ pipeline {
         }
     }
 	  
-    stage('Run GoReleaser - MASTER') {
-    }
     stage('Run GoReleaser - LATEST') {
         when {branch 'latest'}
         steps {
