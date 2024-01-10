@@ -110,7 +110,7 @@ $ mem bench producer --message-size 128 --count 1000 --concurrency 1 --host <hos
 #### Usage
 To benchmark a Memphis consumer, use the following command structure:
 ```sh
-$ mem bench consumer --message-size 128 --count 1000 --concurrency 1 --batch-size 50 --host <host> --account-id <account-id(not needed for open-source)> --user <client type user> --password <password>
+$ mem bench consumer --message-size 128 --count 1000 --concurrency 1 --batch-size 500 --host <host> --account-id <account-id(not needed for open-source)> --user <client type user> --password <password>
 ```
 
 ### available flags
