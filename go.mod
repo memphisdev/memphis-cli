@@ -1,6 +1,6 @@
 module memphis-cli
 
-go 1.19
+go 1.20
 
 require (
 	github.com/briandowns/spinner v1.23.0
