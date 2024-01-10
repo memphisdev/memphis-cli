@@ -144,7 +144,7 @@ var benchProduceCmd = &cobra.Command{
 	Use:     "producer",
 	Aliases: []string{"produce"},
 	Short:   "Produce messages to a station",
-	Example: "bench produce --message-size 1024 --message-count 5",
+	Example: "mem bench produce --message-size 1024 --message-count 5",
 	Run: func(cmd *cobra.Command, args []string) {
 		host, err := cmd.Flags().GetString("host")
 		if host == "" || err != nil {
@@ -222,7 +222,7 @@ var benchConsumeCmd = &cobra.Command{
 	Use:     "consumer",
 	Aliases: []string{"consume"},
 	Short:   "Consume messages from a station",
-	Example: "bench consume --batch-size 500 --concurrency 2",
+	Example: "mem bench consume --batch-size 500 --concurrency 2",
 	Run: func(cmd *cobra.Command, args []string) {
 		host, err := cmd.Flags().GetString("host")
 		if host == "" || err != nil {
