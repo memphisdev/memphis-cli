@@ -23,6 +23,7 @@ pipeline {
             sh """
                 echo -e "[goreleaser]\nname=GoReleaser\nbaseurl=https://repo.goreleaser.com/yum/\nenabled=1\ngpgcheck=0" | sudo tee /etc/yum.repos.d/goreleaser.repo
                 sudo dnf install goreleaser -y
+		sudo dnf install go -y
             """
         }
     }
