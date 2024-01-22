@@ -103,8 +103,11 @@ func generateClientsAndProduceMessages(host, user, pass, station, pName, partiti
 	if syncProduce {
 		produceSyncOpts = memphis.SyncProduce()
 	}
-	producePartitionOpts := memphis.ProducerPartitionNumber(partitionNumber)
-	if partitionKey != "" {
+
+	var producePartitionOpts memphis.ProduceOpt
+	if partitionNumber > 0 {
+		producePartitionOpts = memphis.ProducerPartitionNumber(partitionNumber)
+	} else if partitionKey != "" {
 		producePartitionOpts = memphis.ProducerPartitionKey(partitionKey)
 	}
 	loader.Stop()
@@ -181,8 +184,8 @@ var benchProduceCmd = &cobra.Command{
 			count = 1
 		}
 		partitionNumber, err := cmd.Flags().GetInt("partition-number")
-		if partitionNumber < 1 || err != nil {
-			partitionNumber = 1
+		if err != nil {
+			partitionNumber = 0
 		}
 		partitionKey, _ := cmd.Flags().GetString("partition-key")
 		message, _ := cmd.Flags().GetString("message")        // default is ""
@@ -356,7 +359,7 @@ var benchCmd = &cobra.Command{
 func init() {
 	benchProduceCmd.Flags().String("station", "benchmark-station", "The desired station to which the messages will be produced, default is benchmark-station")
 	benchProduceCmd.Flags().String("partition-key", "", "The desired partition key with which the messages will be produced, this will take priority in case partition-number flag is also provided")
-	benchProduceCmd.Flags().Int("partition-number", 1, "The desired partition number to which the messages will be produced, default is 1")
+	benchProduceCmd.Flags().Int("partition-number", 0, "The desired partition number to which the messages will be produced, default is 1")
 	benchProduceCmd.Flags().String("producer-name", "p-bench", "The desired name of the producer, default is p-bench")
 	benchProduceCmd.Flags().Int("message-size", 128, "The desired message size in bytes, default is 128, min is 128, max is 8,388,608(8MB). In case message flag is empty this will cause random data to be created")
 	benchProduceCmd.Flags().Int("count", 1, "The desired amount of messages to be produced, default is 1")
